@@ -1,14 +1,15 @@
 # aoc2023
 
-A Clojure library designed to ... well, that part is up to you.
+Collection of hopefully many solutions to the Advent of Code 2023 - in Clojure. 
 
 ## Usage
 
-FIXME
+run: lein test
+
 
 ## License
 
-Copyright Â© 2023 FIXME
+Copyright © 2023 Werner Beckmann
 
 This program and the accompanying materials are made available under the
 terms of the Eclipse Public License 2.0 which is available at

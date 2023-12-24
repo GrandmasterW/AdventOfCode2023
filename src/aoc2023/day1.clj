@@ -3,11 +3,9 @@
 (ns aoc2023.day1
    (:require [clojure.string :as s]
              [aoc2023.util :as u]
-             [clojure.set :as cset]
-             [clojure.pprint :as p]
             ))
 ;; ----------------------------------------
-;; programming examples
+;; puzzle examples
 ;; ----------------------------------------
 
 (def example-input-a "src/aoc2023/day1-example-input-a.txt")
@@ -50,29 +48,35 @@
    "9" 9
    })
 
-(def all-digits (cset/union digitnames digits))
 
-;; the regexp search pattern for either digits or names of digits
-(def pattern
-  (re-pattern
-       (str "(?=(" (s/join  "|" (keys all-digits)) "))" )))
+;; --------------------------------------------------
+
+(defn make-pattern
+  "creates a pattern with lookahead (if true) for the keys of the map"
+  [the-digits-map lookahead]
+  (if lookahead
+    (re-pattern
+     (str "(?=("
+          (s/join  "|" (keys the-digits-map)) "))"))
+    (re-pattern
+     (s/join  "|" (keys the-digits-map)))))
 
 (defn vec-to-digit
-  "converts a vector or str-digits or fully written words like eight into a seq of number-digits: ['1' 'two'] -> [1 2]"
-  [v]
-  (mapv all-digits v))
+  "converts a vector or str-digits or fully written words like eight into a seq of number-digits: ['1' 'two'] -> [1 2] by using the given hashmap"
+  [the-digits v]
+  (mapv the-digits v))
 
 ;; --------------------------------------------------
 
 
-(defn is-digit-value? [x]
+(defn is-digit-value?
+  "true if x is between 0 and 9" [x]
   (and (>= x 0) (<= x 9)))
 
-(defn make-number [v]
+(defn make-number 
   "creates a number from first and last element of v, both need to be digits"
-  (let [res (+ (* (first v) 10) (last v))]
-;;    (println (str v "\t\t" res))
-    res))
+  [v]
+  (+ (* (first v) 10) (last v)))
 
 (defn part-a [x]
   (->> x
@@ -87,19 +91,22 @@
 ;; funny... eightwo is 82... difficult with regex! 
 ;; --------------------------------------------------
 
-(defn parse-line [x]
+(defn parse-line
+  "parse a string x by regex pattern matching with lookahead to comply with eightwo problem. Removes the not required empty elements after flattening it all. Returns a vector of strings."
+  [regpattern x]
   (into []
-        (remove empty? (flatten (re-seq pattern x))))
-  )
+        (remove empty? (flatten (re-seq regpattern x)))))
+
 
 (defn part-b [x]
-  (->> x
-       (s/split-lines)
-       (mapv parse-line)
-       (mapv vec-to-digit)
-       (mapv make-number)
-       (reduce + 0)
-       )
-  )
+  (let [all-digits (merge digitnames digits) ; all we need is strings as keys
+        pattern (make-pattern all-digits true) ; regexp search pattern for either digits or names of digits
+      ]
+    (->> x
+         (s/split-lines)
+         (mapv (partial parse-line pattern))
+         (mapv (partial vec-to-digit all-digits))
+         (mapv make-number)
+         (reduce + 0))))
 
 
